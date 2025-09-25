@@ -18,8 +18,7 @@ class Eptid:
     def __init__(self, secret):
         """Initialise the identifier store.
 
-        Args:
-            secret: Shared secret used when hashing identifiers.
+        :param secret: Shared secret used when hashing identifiers.
         """
         self._db = {}
         self.secret = secret
@@ -27,13 +26,10 @@ class Eptid:
     def make(self, idp, sp, args):
         """Produce an eduPersonTargetedID value.
 
-        Args:
-            idp: Entity identifier of the identity provider.
-            sp: Entity identifier of the service provider.
-            args: Tuple of stable identifiers for the subject.
-
-        Returns:
-            str: A ``!`` delimited targeted identifier.
+        :param idp: Entity identifier of the identity provider.
+        :param sp: Entity identifier of the service provider.
+        :param args: Tuple of stable identifiers for the subject.
+        :return: A ``!`` delimited targeted identifier.
         """
         md5 = hashlib.md5()
         for arg in args:
@@ -55,11 +51,9 @@ class Eptid:
     def __getitem__(self, key):
         """Retrieve a stored targeted identifier.
 
-        Args:
-            key: Key derived from the service provider and subject identifier.
-
-        Returns:
-            str: Persisted targeted identifier.
+        :param key: Key derived from the service provider and subject
+            identifier.
+        :return: Persisted targeted identifier.
         """
         if isinstance(key, bytes):
             key = key.decode("utf-8")
@@ -68,9 +62,8 @@ class Eptid:
     def __setitem__(self, key, value):
         """Store a targeted identifier in the internal mapping.
 
-        Args:
-            key: Dictionary key derived from the subject identifier.
-            value: Targeted identifier to persist.
+        :param key: Dictionary key derived from the subject identifier.
+        :param value: Targeted identifier to persist.
         """
         if isinstance(key, bytes):
             key = key.decode("utf-8")
@@ -79,13 +72,10 @@ class Eptid:
     def get(self, idp, sp, *args):
         """Return a deterministic targeted identifier.
 
-        Args:
-            idp: Entity identifier for the issuing identity provider.
-            sp: Entity identifier for the relying service provider.
-            *args: Stable subject identifiers such as internal IDs.
-
-        Returns:
-            str: Cached or newly generated targeted identifier.
+        :param idp: Entity identifier for the issuing identity provider.
+        :param sp: Entity identifier for the relying service provider.
+        :param args: Stable subject identifiers such as internal IDs.
+        :return: Cached or newly generated targeted identifier.
         """
         # key is a combination of sp_entity_id and object id
         key = ("__".join([sp, args[0]])).encode("utf-8")
@@ -107,9 +97,8 @@ class EptidShelve(Eptid):
     def __init__(self, secret, filename):
         """Initialise a shelve database for persistent identifiers.
 
-        Args:
-            secret: Shared secret used for deterministic hashing.
-            filename: Base file name for the shelve database.
+        :param secret: Shared secret used for deterministic hashing.
+        :param filename: Base file name for the shelve database.
         """
         Eptid.__init__(self, secret)
         if filename.endswith(".db"):

@@ -27,12 +27,11 @@ class Scope(SamlBase):
     def __init__(self, regexp="false", text=None, extension_elements=None, extension_attributes=None):
         """Initialise a metadata scope element.
 
-        Args:
-            regexp: Flag indicating whether the scope is interpreted as a
-                regular expression.
-            text: Raw text payload for the element.
-            extension_elements: Additional XML child elements.
-            extension_attributes: Additional XML attributes.
+        :param regexp: Flag indicating whether the scope is interpreted as a
+            regular expression.
+        :param text: Raw text payload for the element.
+        :param extension_elements: Additional XML child elements.
+        :param extension_attributes: Additional XML attributes.
         """
         SamlBase.__init__(
             self, text=text, extension_elements=extension_elements, extension_attributes=extension_attributes
@@ -62,12 +61,12 @@ class KeyAuthority(SamlBase):
     def __init__(self, key_info=None, verify_depth="1", text=None, extension_elements=None, extension_attributes=None):
         """Initialise a key authority description.
 
-        Args:
-            key_info: Sequence of :class:`~saml2.xmldsig.KeyInfo` elements.
-            verify_depth: Verification depth allowed when chaining authorities.
-            text: Raw text payload.
-            extension_elements: Additional XML child elements.
-            extension_attributes: Additional XML attributes.
+        :param key_info: Sequence of :class:`~saml2.xmldsig.KeyInfo` elements.
+        :param verify_depth: Verification depth allowed when chaining
+            authorities.
+        :param text: Raw text payload.
+        :param extension_elements: Additional XML child elements.
+        :param extension_attributes: Additional XML attributes.
         """
         SamlBase.__init__(
             self, text=text, extension_elements=extension_elements, extension_attributes=extension_attributes

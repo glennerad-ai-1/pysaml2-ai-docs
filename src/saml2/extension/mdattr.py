@@ -37,12 +37,11 @@ class EntityAttributesType_(SamlBase):
     ):
         """Initialise the entity attributes collection.
 
-        Args:
-            attribute: Sequence of :class:`saml.Attribute` instances.
-            assertion: Sequence of :class:`saml.Assertion` instances.
-            text: Raw text payload.
-            extension_elements: Additional XML child elements.
-            extension_attributes: Additional XML attributes.
+        :param attribute: Sequence of :class:`saml.Attribute` instances.
+        :param assertion: Sequence of :class:`saml.Assertion` instances.
+        :param text: Raw text payload.
+        :param extension_elements: Additional XML child elements.
+        :param extension_attributes: Additional XML attributes.
         """
         SamlBase.__init__(
             self,

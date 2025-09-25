@@ -172,8 +172,7 @@ class Config:
     def __init__(self, homedir="."):
         """Initialise the configuration with default values.
 
-        Args:
-            homedir: Base directory used for resolving relative file paths.
+        :param homedir: Base directory used for resolving relative file paths.
         """
 
         self.logging = None
@@ -242,10 +241,9 @@ class Config:
     def setattr(self, context, attr, val):
         """Set a configuration attribute for the given context.
 
-        Args:
-            context: Entity context (``""`` for common attributes).
-            attr: Attribute name to assign.
-            val: Value to assign.
+        :param context: Entity context (``""`` for common attributes).
+        :param attr: Attribute name to assign.
+        :param val: Value to assign.
         """
 
         if context == "":
@@ -256,12 +254,9 @@ class Config:
     def getattr(self, attr, context=None):
         """Retrieve a configuration attribute, falling back to defaults.
 
-        Args:
-            attr: Attribute name to look up.
-            context: Optional entity context to read from.
-
-        Returns:
-            Any: The stored value or ``None`` when undefined.
+        :param attr: Attribute name to look up.
+        :param context: Optional entity context to read from.
+        :return: The stored value or ``None`` when undefined.
         """
 
         if context is None:
@@ -275,9 +270,8 @@ class Config:
     def load_special(self, cnf, typ):
         """Populate role-specific configuration keys.
 
-        Args:
-            cnf: Service-specific configuration dictionary.
-            typ: Entity type key such as ``"idp"`` or ``"sp"``.
+        :param cnf: Service-specific configuration dictionary.
+        :param typ: Entity type key such as ``"idp"`` or ``"sp"``.
         """
 
         for arg in SPEC[typ]:
@@ -298,11 +292,8 @@ class Config:
     def load_complex(self, cnf):
         """Process configuration blocks that require additional setup.
 
-        Args:
-            cnf: Configuration dictionary.
-
-        Raises:
-            ConfigurationError: If attribute converters are missing.
+        :param cnf: Configuration dictionary.
+        :raises ConfigurationError: If attribute converters are missing.
         """
 
         acs = ac_factory(cnf.get("attribute_map_dir"))
@@ -322,13 +313,10 @@ class Config:
     def load(self, cnf, metadata_construction=None):
         """Load configuration data into the instance.
 
-        Args:
-            cnf: Configuration dictionary.
-            metadata_construction: Deprecated argument retained for backwards
-                compatibility. Passing a value triggers a warning.
-
-        Returns:
-            Config: The populated configuration instance.
+        :param cnf: Configuration dictionary.
+        :param metadata_construction: Deprecated argument retained for
+            backwards compatibility. Passing a value triggers a warning.
+        :return: The populated configuration instance.
         """
 
         if metadata_construction is not None:
@@ -390,11 +378,8 @@ class Config:
     def _load(self, fil):
         """Import a configuration module from a path or dotted name.
 
-        Args:
-            fil: Path or module name pointing to the configuration module.
-
-        Returns:
-            ModuleType: Imported module containing configuration data.
+        :param fil: Path or module name pointing to the configuration module.
+        :return: Imported module containing configuration data.
         """
 
         head, tail = os.path.split(fil)
@@ -409,16 +394,12 @@ class Config:
     def load_file(self, config_filename, metadata_construction=None):
         """Load configuration from a Python file or module.
 
-        Args:
-            config_filename: File path or module name to import.
-            metadata_construction: Deprecated argument retained for backwards
-                compatibility. Passing a value triggers a warning.
-
-        Returns:
-            Config: The populated configuration instance.
-
-        Raises:
-            ConfigurationError: If the module lacks a ``CONFIG`` dictionary.
+        :param config_filename: File path or module name to import.
+        :param metadata_construction: Deprecated argument retained for
+            backwards compatibility. Passing a value triggers a warning.
+        :return: The populated configuration instance.
+        :raises ConfigurationError: If the module lacks a ``CONFIG``
+            dictionary.
         """
 
         if metadata_construction is not None:
@@ -439,14 +420,9 @@ class Config:
     def load_metadata(self, metadata_conf):
         """Create and populate a metadata store for the configuration.
 
-        Args:
-            metadata_conf: Metadata configuration dictionary.
-
-        Returns:
-            MetadataStore: The populated metadata store.
-
-        Raises:
-            ConfigurationError: If attribute converters are missing.
+        :param metadata_conf: Metadata configuration dictionary.
+        :return: The populated metadata store.
+        :raises ConfigurationError: If attribute converters are missing.
         """
 
         acs = self.attribute_converters
@@ -475,14 +451,12 @@ class Config:
     def endpoint(self, service, binding=None, context=None):
         """Return endpoints matching the requested service and binding.
 
-        Args:
-            service: Service identifier, e.g. ``"single_sign_on_service"``.
-            binding: Optional SAML binding to restrict results to.
-            context: Optional entity context to use when selecting endpoints.
-
-        Returns:
-            list[str] | list[tuple[str, str]]: Exact endpoint URLs when binding
-            is matched, otherwise the unfiltered endpoint specifications.
+        :param service: Service identifier, e.g. ``"single_sign_on_service"``.
+        :param binding: Optional SAML binding to restrict results to.
+        :param context: Optional entity context to use when selecting
+            endpoints.
+        :return: Exact endpoint URLs when ``binding`` is provided, otherwise
+            the unfiltered endpoint specifications.
         """
         spec = []
         unspec = []
@@ -509,13 +483,10 @@ class Config:
     def endpoint2service(self, endpoint, context=None):
         """Look up the service and binding that expose a given endpoint.
 
-        Args:
-            endpoint: Endpoint URL to inspect.
-            context: Optional entity context.
-
-        Returns:
-            tuple[str | None, str | None]: The ``(service, binding)`` pair or
-            ``(None, None)`` when the endpoint is not found.
+        :param endpoint: Endpoint URL to inspect.
+        :param context: Optional entity context.
+        :return: The ``(service, binding)`` pair or ``(None, None)`` when the
+            endpoint is not found.
         """
         endps = self.getattr("endpoints", context)
 
@@ -529,8 +500,8 @@ class Config:
     def do_extensions(self, extensions):
         """Merge configured extensions into the global extensions store.
 
-        Args:
-            extensions: Mapping of extension identifier to configuration data.
+        :param extensions: Mapping of extension identifier to configuration
+            data.
         """
         for key, val in extensions.items():
             self.extensions[key] = val
@@ -538,12 +509,8 @@ class Config:
     def service_per_endpoint(self, context=None):
         """Return a mapping of endpoint URLs to their service and binding.
 
-        Args:
-            context: Optional entity context.
-
-        Returns:
-            dict[str, tuple[str, str]]: Mapping of endpoint URL to
-            ``(service, binding)`` tuples.
+        :param context: Optional entity context.
+        :return: Mapping of endpoint URL to ``(service, binding)`` tuples.
         """
         endps = self.getattr("endpoints", context)
         res = {}
@@ -562,11 +529,8 @@ class SPConfig(Config):
     def vo_conf(self, vo_name):
         """Return the virtual organisation configuration for a given name.
 
-        Args:
-            vo_name: Identifier of the virtual organisation.
-
-        Returns:
-            dict | None: The configuration dictionary or ``None`` if missing.
+        :param vo_name: Identifier of the virtual organisation.
+        :return: The configuration dictionary or ``None`` if missing.
         """
         try:
             return self.virtual_organization[vo_name]
@@ -576,11 +540,8 @@ class SPConfig(Config):
     def ecp_endpoint(self, ipaddress):
         """Resolve which IdP entity should be used for an ECP client.
 
-        Args:
-            ipaddress: IP address of the user agent.
-
-        Returns:
-            str | None: IdP entity ID or ``None`` when no rule matches.
+        :param ipaddress: IP address of the user agent.
+        :return: IdP entity ID or ``None`` when no rule matches.
         """
         _ecp = self.getattr("ecp")
         if _ecp:
@@ -602,15 +563,11 @@ class IdPConfig(Config):
 def config_factory(_type, config):
     """Instantiate and populate a configuration object for the given role.
 
-    Args:
-        _type: Entity type (``"sp"``, ``"idp"``, ``"aa"``, ``"pdp"`` or ``"aq"``).
-        config: Configuration dictionary or path to a configuration module.
-
-    Returns:
-        Config: A populated configuration instance scoped to ``_type``.
-
-    Raises:
-        ValueError: If ``config`` is neither a mapping nor a string path.
+    :param _type: Entity type (``"sp"``, ``"idp"``, ``"aa"``, ``"pdp"`` or
+        ``"aq"``).
+    :param config: Configuration dictionary or path to a configuration module.
+    :return: A populated configuration instance scoped to ``_type``.
+    :raises ValueError: If ``config`` is neither a mapping nor a string path.
     """
     if _type == "sp":
         conf = SPConfig()

@@ -30,11 +30,10 @@ class DiscoveryServer(Entity):
     def __init__(self, config=None, config_file=""):
         """Initialise the discovery server with the given configuration.
 
-        Args:
-            config (dict | saml2.config.Config | None): Optional configuration
-                object used to configure the parent :class:`Entity`.
-            config_file (str): Path to a configuration file that should be
-                loaded when ``config`` is not supplied.
+        :param config: Optional configuration object used to configure the
+            parent :class:`Entity`.
+        :param config_file: Path to a configuration file that should be loaded
+            when ``config`` is not supplied.
         """
 
         if config or config_file:
@@ -43,23 +42,17 @@ class DiscoveryServer(Entity):
     def parse_discovery_service_request(self, url="", query=""):
         """Parse and validate an incoming discovery service request.
 
-        Args:
-            url (str): Full discovery service request URL including the query
-                string.
-            query (str): Raw query component when ``url`` is not already
-                provided.
-
-        Returns:
-            dict: Normalised mapping of discovery service request parameters
+        :param url: Full discovery service request URL including the query
+            string.
+        :param query: Raw query component when ``url`` is not already provided.
+        :return: Normalised mapping of discovery service request parameters
             with single string values.
-
-        Raises:
-            Exception: If a parameter contains duplicate values or violates the
-                discovery service semantics.
-            VerificationError: If the mandatory ``return`` parameter is
-                missing.
-            ValueError: If the ``isPassive`` flag is not ``"true"`` or
-                ``"false"``.
+        :raises Exception: If a parameter contains duplicate values or violates
+            the discovery service semantics.
+        :raises VerificationError: If the mandatory ``return`` parameter is
+            missing.
+        :raises ValueError: If the ``isPassive`` flag is not ``"true"`` or
+            ``"false"``.
         """
 
         if url:
@@ -112,18 +105,15 @@ class DiscoveryServer(Entity):
     def create_discovery_service_response(return_url=None, returnIDParam="entityID", entity_id=None, **kwargs):
         """Construct the redirect response for a Discovery Service request.
 
-        Args:
-            return_url (str | None): Endpoint supplied in the discovery request
-                that the user should be redirected back to.
-            returnIDParam (str): Query-string parameter name that the Service
-                Provider expects for the chosen IdP identifier.
-            entity_id (str | None): The identifier of the selected IdP to
-                append to the return URL when available.
-            **kwargs: Additional parameters that may contain ``return`` when
-                ``return_url`` is omitted.
-
-        Returns:
-            str: The redirect URL that should be returned to the user agent.
+        :param return_url: Endpoint supplied in the discovery request that the
+            user should be redirected back to.
+        :param returnIDParam: Query-string parameter name that the Service
+            Provider expects for the chosen IdP identifier.
+        :param entity_id: The identifier of the selected IdP to append to the
+            return URL when available.
+        :param kwargs: Additional parameters that may contain ``return`` when
+            ``return_url`` is omitted.
+        :return: The redirect URL that should be returned to the user agent.
         """
 
         if return_url is None:
@@ -143,11 +133,8 @@ class DiscoveryServer(Entity):
     def verify_sp_in_metadata(self, entity_id):
         """Check whether the Service Provider exists in the metadata store.
 
-        Args:
-            entity_id (str): EntityID of the Service Provider being validated.
-
-        Returns:
-            bool: ``True`` when discovery response endpoints are published in
+        :param entity_id: EntityID of the Service Provider being validated.
+        :return: ``True`` when discovery response endpoints are published in
             metadata, otherwise ``False``.
         """
 
@@ -161,14 +148,11 @@ class DiscoveryServer(Entity):
     def verify_return(self, entity_id, return_url):
         """Verify that the return URL is allowed for the Service Provider.
 
-        Args:
-            entity_id (str): EntityID of the Service Provider that issued the
-                discovery request.
-            return_url (str): URL that the Service Provider requested the user
-                should be redirected to.
-
-        Returns:
-            bool: ``True`` if the URL fails to match one of the discovery
+        :param entity_id: EntityID of the Service Provider that issued the
+            discovery request.
+        :param return_url: URL that the Service Provider requested the user
+            should be redirected to.
+        :return: ``True`` if the URL fails to match one of the discovery
             response locations published in metadata, otherwise ``False``.
         """
 

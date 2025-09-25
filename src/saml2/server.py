@@ -63,17 +63,12 @@ def _shelve_compat(name, *args, **kwargs):
     attempt the ``.db`` suffix to determine the database type, so the function
     retries without the suffix if necessary.
 
-    Args:
-        name: The base filename of the shelve database.
-        *args: Positional arguments forwarded to ``shelve.open``.
-        **kwargs: Keyword arguments forwarded to ``shelve.open``.
-
-    Returns:
-        shelve.DbfilenameShelf: An opened shelf instance.
-
-    Raises:
-        dbm.error: If the shelve database cannot be opened even after retrying
-            without the ``.db`` suffix.
+    :param name: The base filename of the shelve database.
+    :param args: Positional arguments forwarded to ``shelve.open``.
+    :param kwargs: Keyword arguments forwarded to ``shelve.open``.
+    :return: An opened shelf instance.
+    :raises dbm.error: If the shelve database cannot be opened even after
+        retrying without the ``.db`` suffix.
     """
 
     try:
@@ -101,16 +96,15 @@ class Server(Entity):
     ):
         """Initialise an IdP or AA server entity.
 
-        Args:
-            config_file: Path to a configuration file to load.
-            config: In-memory configuration dictionary that overrides
-                ``config_file`` when provided.
-            cache: Optional cache backend for session data.
-            stype: Entity type for the server, typically ``"idp"`` or
-                ``"aa"``.
-            symkey: Symmetric key used for encrypting data. A random key is
-                generated when not supplied.
-            msg_cb: Callback invoked for outgoing protocol messages.
+        :param config_file: Path to a configuration file to load.
+        :param config: In-memory configuration dictionary that overrides
+            ``config_file`` when provided.
+        :param cache: Optional cache backend for session data.
+        :param stype: Entity type for the server, typically ``"idp"`` or
+            ``"aa"``.
+        :param symkey: Symmetric key used for encrypting data. A random key is
+            generated when not supplied.
+        :param msg_cb: Callback invoked for outgoing protocol messages.
         """
 
         Entity.__init__(self, stype, config, config_file, msg_cb=msg_cb)
@@ -129,10 +123,8 @@ class Server(Entity):
     def getvalid_certificate_str(self):
         """Return the last successfully validated certificate string.
 
-        Returns:
-            str | None: PEM-formatted certificate last validated by the
-            security handler, or ``None`` when no certificate has been
-            processed yet.
+        :return: PEM-formatted certificate last validated by the security
+            handler, or ``None`` when no certificate has been processed yet.
         """
 
         if self.sec.cert_handler is not None:
@@ -142,8 +134,7 @@ class Server(Entity):
     def support_AssertionIDRequest(self):
         """Report support for AssertionIDRequest messages.
 
-        Returns:
-            bool: Always ``True`` since AssertionIDRequest is supported.
+        :return: Always ``True`` since AssertionIDRequest is supported.
         """
 
         return True
@@ -151,8 +142,7 @@ class Server(Entity):
     def support_AuthnQuery(self):
         """Report support for AuthnQuery messages.
 
-        Returns:
-            bool: Always ``True`` since AuthnQuery is supported.
+        :return: Always ``True`` since AuthnQuery is supported.
         """
 
         return True
@@ -160,12 +150,9 @@ class Server(Entity):
     def choose_session_storage(self):
         """Select the session storage backend for the IdP.
 
-        Returns:
-            SessionStorage: Storage implementation configured for the IdP.
-
-        Raises:
-            NotImplementedError: If the configured storage type is not
-                recognised.
+        :return: Storage implementation configured for the IdP.
+        :raises NotImplementedError: If the configured storage type is not
+            recognised.
         """
 
         _spec = self.config.getattr("session_storage", "idp")
@@ -186,11 +173,8 @@ class Server(Entity):
     def init_config(self, stype="idp"):
         """Finish configuring the server based on its entity type.
 
-        Args:
-            stype: Server type, typically ``"idp"`` or ``"aa"``.
-
-        Raises:
-            Exception: If the identity database cannot be opened.
+        :param stype: Server type, typically ``"idp"`` or ``"aa"``.
+        :raises Exception: If the identity database cannot be opened.
         """
         if stype == "aa":
             return
@@ -260,14 +244,10 @@ class Server(Entity):
     def wants(self, sp_entity_id, index=None):
         """Return the required and optional attributes for a service provider.
 
-        Args:
-            sp_entity_id: The entity ID of the service provider.
-            index: Optional attribute consumer service index. When ``None`` all
-                services are considered together.
-
-        Returns:
-            tuple[list[str], list[str]]: The required and optional attributes
-            as defined in metadata.
+        :param sp_entity_id: The entity ID of the service provider.
+        :param index: Optional attribute consumer service index. When ``None``
+            all services are considered together.
+        :return: The required and optional attributes as defined in metadata.
         """
         return self.metadata.attribute_requirement(sp_entity_id, index)
 

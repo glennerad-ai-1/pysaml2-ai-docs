@@ -14,11 +14,8 @@ DEFAULT_CERT_TYPE = "pem"
 def load_pem_x509_certificate(data):
     """Load an X.509 certificate from PEM encoded data.
 
-    Args:
-        data: PEM encoded certificate bytes.
-
-    Returns:
-        cryptography.x509.Certificate: Loaded certificate.
+    :param data: PEM encoded certificate bytes.
+    :return: Loaded certificate.
     """
     return _x509.load_pem_x509_certificate(data)
 
@@ -26,11 +23,8 @@ def load_pem_x509_certificate(data):
 def load_der_x509_certificate(data):
     """Load an X.509 certificate from DER encoded data.
 
-    Args:
-        data: DER encoded certificate bytes.
-
-    Returns:
-        cryptography.x509.Certificate: Loaded certificate.
+    :param data: DER encoded certificate bytes.
+    :return: Loaded certificate.
     """
     return _x509.load_der_x509_certificate(data)
 
@@ -38,12 +32,9 @@ def load_der_x509_certificate(data):
 def load_x509_certificate(data, cert_type="pem"):
     """Load an X.509 certificate in either PEM or DER format.
 
-    Args:
-        data: Certificate bytes.
-        cert_type: Encoding type, ``"pem"`` or ``"der"``.
-
-    Returns:
-        cryptography.x509.Certificate: Loaded certificate object.
+    :param data: Certificate bytes.
+    :param cert_type: Encoding type, ``"pem"`` or ``"der"``.
+    :return: Loaded certificate object.
     """
     cert_reader = _x509_loaders.get(cert_type)
 
@@ -63,11 +54,8 @@ def load_x509_certificate(data, cert_type="pem"):
 def get_public_bytes_from_cert(cert):
     """Return the certificate in PEM encoded textual form.
 
-    Args:
-        cert: Certificate to serialise.
-
-    Returns:
-        str: PEM encoded certificate string.
+    :param cert: Certificate to serialise.
+    :return: PEM encoded certificate string.
     """
     data = cert.public_bytes(_cryptography_encoding.PEM).decode()
     return data
