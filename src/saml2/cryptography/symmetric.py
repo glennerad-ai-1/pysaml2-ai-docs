@@ -23,17 +23,19 @@ class Fernet:
 
     @staticmethod
     def generate_key():
-        """Return a key suitable for use by this method.
+        """Return a new encryption key.
 
-        :return: byte data representing the encyption/decryption key
+        Returns:
+            bytes: Key suitable for Fernet encryption/decryption.
         """
         key = _fernet.Fernet.generate_key()
         return key
 
     def __init__(self, key=None):
-        """Initialize this method by optionally providing a key.
+        """Initialise the cipher with an optional pre-generated key.
 
-        :param key: byte data representing the encyption/decryption key
+        Args:
+            key: Optional base64-encoded key material.
         """
         if key:
             fernet_key_error = SymmetricCryptographyError("Fernet key must be 32 url-safe base64-encoded bytes.")
@@ -52,8 +54,13 @@ class Fernet:
     def encrypt(self, plaintext, *args, **kwargs):
         """Encrypt the given plaintext.
 
-        :param plaintext: byte data representing the plaintext
-        :return: byte data representing the ciphertext
+        Args:
+            plaintext: Bytes representing the message to encrypt.
+            *args: Deprecated positional arguments.
+            **kwargs: Deprecated keyword arguments.
+
+        Returns:
+            bytes: Encrypted ciphertext.
         """
         if args or kwargs:
             _deprecation_msg = (
@@ -71,8 +78,13 @@ class Fernet:
     def decrypt(self, ciphertext, *args, **kwargs):
         """Decrypt the given ciphertext.
 
-        :param ciphertext: byte data representing the ciphertext
-        :return: byte data representing the plaintext
+        Args:
+            ciphertext: Bytes representing the encrypted payload.
+            *args: Deprecated positional arguments.
+            **kwargs: Deprecated keyword arguments.
+
+        Returns:
+            bytes: Decrypted plaintext.
         """
         if args or kwargs:
             _deprecation_msg = (
@@ -88,6 +100,7 @@ class Fernet:
         return plaintext
 
     def build_cipher(self, *args, **kwargs):
+        """Warn callers that custom cipher construction is unsupported."""
         _deprecation_msg = (
             "The 'Fernet' class does not need a build_cipher method."
             "Remove any calls to this method. "
@@ -124,17 +137,22 @@ class AESCipher:
         _warn(_deprecation_msg, DeprecationWarning)
 
     def __init__(self, key):
-        """
-        :param key: The encryption key
-        :return: AESCipher instance
+        """Initialise the legacy AES cipher helper.
+
+        Args:
+            key: Raw encryption key bytes.
         """
         self.__class__._deprecation_notice()
         self.key = key
 
     def build_cipher(self, alg="aes_128_cbc"):
-        """
-        :param alg: cipher algorithm
-        :return: A Cipher instance
+        """Construct a cryptography cipher for the requested algorithm.
+
+        Args:
+            alg: Cipher algorithm descriptor, e.g. ``"aes_128_cbc"``.
+
+        Returns:
+            tuple[Cipher, bytes]: Cipher instance and random IV.
         """
         self.__class__._deprecation_notice()
         typ, bits, cmode = alg.lower().split("_")
@@ -160,13 +178,17 @@ class AESCipher:
         return cipher, iv
 
     def encrypt(self, msg, alg="aes_128_cbc", padding="PKCS#7", b64enc=True, block_size=AES_BLOCK_SIZE):
-        """
-        :param key: The encryption key
-        :param msg: Message to be encrypted
-        :param padding: Which padding that should be used
-        :param b64enc: Whether the result should be base64encoded
-        :param block_size: If PKCS#7 padding which block size to use
-        :return: The encrypted message
+        """Encrypt a message using the legacy AES helper.
+
+        Args:
+            msg: Plaintext message to encrypt.
+            alg: Cipher algorithm descriptor.
+            padding: Padding strategy name (``"PKCS#7"`` or ``"PKCS#5"``).
+            b64enc: Whether the result should be base64 encoded.
+            block_size: Block size to use with PKCS#7 padding.
+
+        Returns:
+            bytes: Encrypted (optionally base64 encoded) message.
         """
         self.__class__._deprecation_notice()
         if padding == "PKCS#7":
@@ -193,10 +215,16 @@ class AESCipher:
         return enc_msg
 
     def decrypt(self, msg, alg="aes_128_cbc", padding="PKCS#7", b64dec=True):
-        """
-        :param key: The encryption key
-        :param msg: Base64 encoded message to be decrypted
-        :return: The decrypted message
+        """Decrypt a message using the legacy AES helper.
+
+        Args:
+            msg: Message to decrypt (base64 encoded by default).
+            alg: Cipher algorithm descriptor.
+            padding: Padding strategy name.
+            b64dec: Whether to base64 decode the input before decryption.
+
+        Returns:
+            bytes: Decrypted plaintext.
         """
         self.__class__._deprecation_notice()
         data = _base64.b64decode(msg) if b64dec else msg

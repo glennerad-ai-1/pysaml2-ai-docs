@@ -37,6 +37,18 @@ SIGNING_METHODS = {
 
 
 def get_algorithm_support(xmlsec):
+    """Query the xmlsec binary for supported digest and signing algorithms.
+
+    Args:
+        xmlsec: Path to the xmlsec1 binary.
+
+    Returns:
+        dict[str, list[str]]: Mapping of ``digest`` and ``signing`` algorithm
+        names recognised by xmlsec.
+
+    Raises:
+        SystemError: If xmlsec reports an error.
+    """
     com_list = [xmlsec, "--list-transforms"]
     pof = Popen(com_list, stderr=PIPE, stdout=PIPE)
     p_out, p_err = pof.communicate()
@@ -60,6 +72,15 @@ def get_algorithm_support(xmlsec):
 
 
 def algorithm_support_in_metadata(xmlsec):
+    """Represent xmlsec algorithm support as metadata extension elements.
+
+    Args:
+        xmlsec: Path to the xmlsec1 binary.
+
+    Returns:
+        list[SamlBase]: Digest and signing method elements suitable for
+        inclusion in metadata.
+    """
     if xmlsec is None:
         return []
 

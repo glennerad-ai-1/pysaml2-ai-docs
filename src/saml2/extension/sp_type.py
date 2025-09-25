@@ -24,6 +24,7 @@ class SPTypeType_(SamlBase):
 
 
 def sp_type_type__from_string(xml_string):
+    """Deserialize an ``SPTypeType`` element from XML."""
     return saml2.create_class_from_xml_string(SPTypeType_, xml_string)
 
 
@@ -39,6 +40,7 @@ class SPType(SPTypeType_):
 
 
 def sp_type_from_string(xml_string):
+    """Deserialize an ``SPType`` element from XML."""
     return saml2.create_class_from_xml_string(SPType, xml_string)
 
 
@@ -54,4 +56,5 @@ ELEMENT_BY_TAG = {
 
 
 def factory(tag, **kwargs):
+    """Instantiate an SP type element by tag."""
     return ELEMENT_BY_TAG[tag](**kwargs)

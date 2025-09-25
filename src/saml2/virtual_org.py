@@ -8,7 +8,16 @@ logger = logging.getLogger(__name__)
 
 
 class VirtualOrg:
+    """Coordinate attribute aggregation for a virtual organisation."""
+
     def __init__(self, sp, vorg, cnf):
+        """Initialise helpers for attribute aggregation.
+
+        Args:
+            sp: Service provider client instance.
+            vorg: Name of the virtual organisation.
+            cnf: Virtual organisation configuration dictionary.
+        """
         self.sp = sp  # The parent SP client instance
         self._name = vorg
         self.common_identifier = cnf["common_identifier"]
@@ -22,19 +31,15 @@ class VirtualOrg:
             self.nameid_format = NAMEID_FORMAT_PERSISTENT
 
     def _cache_session(self, session_info):
+        """Persist aggregated session information."""
         return True
 
     def _affiliation_members(self):
-        """
-        Get the member of the Virtual Organization from the metadata,
-        more specifically from AffiliationDescriptor.
-        """
+        """Retrieve virtual organisation members from metadata."""
         return self.sp.config.metadata.vo_members(self._name)
 
     def members_to_ask(self, name_id):
-        """Find the member of the Virtual Organization that I haven't already
-        spoken too
-        """
+        """Return members that have not yet provided attributes for ``name_id``."""
 
         vo_members = self._affiliation_members()
         for member in self.member:
@@ -47,6 +52,7 @@ class VirtualOrg:
         return vo_members
 
     def get_common_identifier(self, name_id):
+        """Return the subject identifier used to query member IdPs."""
         (ava, _) = self.sp.users.get_identity(name_id)
         if ava == {}:
             return None
@@ -59,6 +65,15 @@ class VirtualOrg:
             return None
 
     def do_aggregation(self, name_id):
+        """Perform attribute aggregation across VO members.
+
+        Args:
+            name_id: Subject identifier whose attributes should be aggregated.
+
+        Returns:
+            bool: ``True`` if at least one member was queried, otherwise
+            ``False``.
+        """
 
         logger.info("** Do VO aggregation **\nSubjectID: %s, VO:%s", name_id, self._name)
 

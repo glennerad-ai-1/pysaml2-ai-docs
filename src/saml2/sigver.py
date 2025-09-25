@@ -168,13 +168,17 @@ def signed(item):
 
 
 def get_xmlsec_binary(paths=None):
-    """
-    Tries to find the xmlsec1 binary.
+    """Locate the ``xmlsec1`` binary.
 
-    :param paths: Non-system path paths which should be searched when
-        looking for xmlsec1
-    :return: full name of the xmlsec1 binary found. If no binaries are
-        found then an exception is raised.
+    Args:
+        paths: Optional iterable of additional directories to search before
+            the system ``PATH``.
+
+    Returns:
+        str: Absolute path to the executable.
+
+    Raises:
+        SigverError: If the binary cannot be located.
     """
     if os.name == "posix":
         bin_name = ["xmlsec1"]
@@ -206,10 +210,15 @@ def get_xmlsec_binary(paths=None):
 
 
 def _get_xmlsec_cryptobackend(path=None, search_paths=None, delete_tmpfiles=True):
-    """
-    Initialize a CryptoBackendXmlSec1 crypto backend.
+    """Initialise a :class:`CryptoBackendXmlSec1` helper.
 
-    This function is now internal to this module.
+    Args:
+        path: Explicit path to the xmlsec binary.
+        search_paths: Extra directories to search when ``path`` is ``None``.
+        delete_tmpfiles: Whether temporary files should be removed.
+
+    Returns:
+        CryptoBackendXmlSec1: Backend wrapper prepared for signing operations.
     """
     if path is None:
         path = get_xmlsec_binary(paths=search_paths)
@@ -313,12 +322,17 @@ def _instance(klass, ava, seccont, base64encode=False, elements_to_sign=None):
 # XXX as setup by pre_signature_part
 # XXX !!expects instance string!!
 def signed_instance_factory(instance, seccont, elements_to_sign=None):
-    """
+    """Return a helper that signs the provided XML instance when invoked.
 
-    :param instance: The instance to be signed or not
-    :param seccont: The security context
-    :param elements_to_sign: Which parts if any that should be signed
-    :return: A class instance if not signed otherwise a string
+    Args:
+        instance: XML object or serialised XML string to sign.
+        seccont: Security context capable of applying XML signatures.
+        elements_to_sign: Iterable of ``(node_name, node_id)`` tuples describing
+            the elements that should be signed.
+
+    Returns:
+        str | saml2.saml.Base: Signed XML serialisation or the original
+        ``instance`` when ``elements_to_sign`` is falsy.
     """
     if not elements_to_sign:
         return instance
@@ -334,22 +348,16 @@ def signed_instance_factory(instance, seccont, elements_to_sign=None):
 
 
 def make_temp(content, suffix="", decode=True, delete_tmpfiles=True):
-    """
-    Create a temporary file with the given content.
+    """Create a temporary file for use with ``xmlsec`` operations.
 
-    This is needed by xmlsec in some cases where only strings exist when files
-    are expected.
+    Args:
+        content: Text or bytes that should be written to the file.
+        suffix: Optional filename suffix required by ``xmlsec``.
+        decode: ``True`` to base64 decode ``content`` before writing.
+        delete_tmpfiles: ``True`` to delete the file when closed.
 
-    :param content: The information to be placed in the file
-    :param suffix: The temporary file might have to have a specific
-        suffix in certain circumstances.
-    :param decode: The input content might be base64 coded. If so it
-        must, in some cases, be decoded before being placed in the file.
-    :param delete_tmpfiles: Whether to keep the tmp files or delete them when they are
-        no longer in use
-    :return: 2-tuple with file pointer ( so the calling function can
-        close the file) and filename (which is for instance needed by the
-        xmlsec function).
+    Returns:
+        tempfile.NamedTemporaryFile: Handle for the created file.
     """
     content_encoded = content.encode("utf-8") if not isinstance(content, bytes) else content
     content_raw = base64.b64decode(content_encoded) if decode else content_encoded
@@ -947,10 +955,14 @@ class CryptoBackendXMLSecurity(CryptoBackend):
 
 
 def security_context(conf):
-    """Creates a security context based on the configuration
+    """Create a :class:`SecurityContext` based on configuration settings.
 
-    :param conf: The configuration, this is a Config instance
-    :return: A SecurityContext instance
+    Args:
+        conf: Configuration instance exposing crypto backend attributes.
+
+    Returns:
+        SecurityContext | None: Prepared security context or ``None`` when
+        configuration is missing.
     """
     if not conf:
         return None
@@ -1767,16 +1779,17 @@ def pre_signature_part(
     digest_alg=None,
     sign_alg=None,
 ):
-    """
-    If an assertion is to be signed the signature part has to be preset
-    with which algorithms to be used, this function returns such a
-    preset part.
+    """Create the signature template for an assertion.
 
-    :param ident: The identifier of the assertion, so you know which assertion
-        was signed
-    :param public_key: The base64 part of a PEM file
-    :param identifier:
-    :return: A preset signature part
+    Args:
+        ident: Identifier of the assertion that will be signed.
+        public_key: Optional base64 encoded PEM key data.
+        identifier: Optional signing key identifier.
+        digest_alg: Digest algorithm URI override.
+        sign_alg: Signature algorithm URI override.
+
+    Returns:
+        saml2.ds.Signature: Prepared signature descriptor.
     """
 
     # XXX

@@ -26,14 +26,13 @@ class Unknown(SAMLError):
 
 
 def code(item):
-    """
-    Turn a NameID class instance into a quoted string of comma separated
-    attribute,value pairs. The attribute names are replaced with digits.
-    Depends on knowledge on the specific order of the attributes for the
-    class that is used.
+    """Serialise a :class:`~saml2.saml.NameID` into a lookup string.
 
-    :param item: The class instance
-    :return: A quoted string
+    Args:
+        item: NameID instance to encode.
+
+    Returns:
+        str: Comma separated list of indexed attributes suitable for storage.
     """
     _res = []
     i = 0
@@ -46,8 +45,13 @@ def code(item):
 
 
 def code_binary(item):
-    """
-    Return a binary 'code' suitable for hashing.
+    """Return a binary representation of :func:`code` output.
+
+    Args:
+        item: NameID instance to encode.
+
+    Returns:
+        bytes: UTF-8 encoded representation of :func:`code`.
     """
     code_str = code(item)
     if isinstance(code_str, str):
@@ -56,9 +60,13 @@ def code_binary(item):
 
 
 def decode(txt):
-    """Turns a coded string by code() into a NameID class instance.
+    """Parse a string created by :func:`code` back into a NameID instance.
 
-    :param txt: The coded string
+    Args:
+        txt: Encoded representation produced by :func:`code`.
+
+    Returns:
+        saml2.saml.NameID: Decoded NameID value.
     """
     _nid = NameID()
     for part in txt.split(","):
@@ -72,11 +80,16 @@ def decode(txt):
 
 
 class IdentDB:
-    """A class that handles identifiers of entities
-    Keeps a list of all nameIDs returned per SP
-    """
+    """Persist NameID mappings for each service provider."""
 
     def __init__(self, db, domain="", name_qualifier=""):
+        """Initialise the identifier database.
+
+        Args:
+            db: ``shelve`` path or dictionary-like storage backend.
+            domain: Domain used when minting email address identifiers.
+            name_qualifier: Default name qualifier to apply.
+        """
         if isinstance(db, str):
             self.db = shelve.open(db, protocol=2)
         else:
@@ -85,6 +98,7 @@ class IdentDB:
         self.name_qualifier = name_qualifier
 
     def _create_id(self, nformat, name_qualifier="", sp_name_qualifier=""):
+        """Generate a unique identifier value for a given NameID format."""
         _id = sha256(rndbytes(32))
         if not isinstance(nformat, bytes):
             nformat = nformat.encode("utf-8")
@@ -100,16 +114,18 @@ class IdentDB:
         return _id.hexdigest()
 
     def create_id(self, nformat, name_qualifier="", sp_name_qualifier=""):
+        """Generate a unique identifier not currently present in the store."""
         _id = self._create_id(nformat, name_qualifier, sp_name_qualifier)
         while _id in self.db:
             _id = self._create_id(nformat, name_qualifier, sp_name_qualifier)
         return _id
 
     def store(self, ident, name_id):
-        """
+        """Persist the association between a user identifier and NameID.
 
-        :param ident: user identifier
-        :param name_id: NameID instance
+        Args:
+            ident: Internal user identifier.
+            name_id: Issued NameID instance.
         """
         # One user may have more than one NameID defined
         try:
@@ -123,10 +139,10 @@ class IdentDB:
         self.db[name_id.text] = ident
 
     def remove_remote(self, name_id):
-        """
-        Remove a NameID to userID mapping
+        """Remove the mapping from a NameID back to the local identifier.
 
-        :param name_id: NameID instance
+        Args:
+            name_id: NameID instance to remove.
         """
         _cn = code(name_id)
         _id = self.db[name_id.text]
@@ -140,6 +156,11 @@ class IdentDB:
         del self.db[name_id.text]
 
     def remove_local(self, sid):
+        """Remove all NameIDs associated with a local identifier.
+
+        Args:
+            sid: Local identifier whose NameIDs should be purged.
+        """
         if not isinstance(sid, bytes):
             sid = sid.encode("utf-8")
 
@@ -155,6 +176,17 @@ class IdentDB:
             pass
 
     def get_nameid(self, userid, nformat, sp_name_qualifier, name_qualifier):
+        """Return an existing or newly issued NameID for a user.
+
+        Args:
+            userid: Internal user identifier.
+            nformat: Requested NameID format.
+            sp_name_qualifier: Service provider name qualifier.
+            name_qualifier: Issuer name qualifier.
+
+        Returns:
+            saml2.saml.NameID: Persistent NameID matching the request.
+        """
         if nformat == NAMEID_FORMAT_PERSISTENT:
             nameid = self.match_local_id(userid, sp_name_qualifier, name_qualifier)
             if nameid:
@@ -180,12 +212,14 @@ class IdentDB:
         return nameid
 
     def find_nameid(self, userid, **kwargs):
-        """
-        Find a set of NameID's that matches the search criteria.
+        """Return NameIDs that match the given attribute filters.
 
-        :param userid: User id
-        :param kwargs: The search filter a set of attribute/value pairs
-        :return: a list of NameID instances
+        Args:
+            userid: Internal user identifier.
+            **kwargs: Attribute/value filters that each NameID must satisfy.
+
+        Returns:
+            list[saml2.saml.NameID]: Matching NameIDs.
         """
         res = []
         try:
@@ -270,11 +304,13 @@ class IdentDB:
             return self.get_nameid(userid, NAMEID_FORMAT_PERSISTENT, sp_name_qualifier, name_qualifier)
 
     def find_local_id(self, name_id):
-        """
-        Only find persistent IDs
+        """Return the internal identifier corresponding to a persistent NameID.
 
-        :param name_id:
-        :return:
+        Args:
+            name_id: NameID instance issued previously by this IdP.
+
+        Returns:
+            str | None: Internal identifier or ``None`` if not found.
         """
 
         try:
@@ -285,6 +321,16 @@ class IdentDB:
             return None
 
     def match_local_id(self, userid, sp_name_qualifier, name_qualifier):
+        """Find a non-transient NameID that matches the provided qualifiers.
+
+        Args:
+            userid: Internal user identifier.
+            sp_name_qualifier: Expected SP name qualifier.
+            name_qualifier: Expected issuer name qualifier.
+
+        Returns:
+            saml2.saml.NameID | None: Matching NameID or ``None`` if missing.
+        """
         try:
             for val in self.db[userid].split(" "):
                 nid = decode(val)
@@ -309,14 +355,19 @@ class IdentDB:
         return None
 
     def handle_name_id_mapping_request(self, name_id, name_id_policy):
-        """
+        """Handle a NameID mapping request from a service provider.
 
-        :param name_id: The NameID that specifies the principal
-        :param name_id_policy: The NameIDPolicy of the requester
-        :return: If an old name_id exists that match the name-id policy
-            that is return otherwise if a new one can be created it
-            will be and returned. If no old matching exists and a new
-            is not allowed to be created None is returned.
+        Args:
+            name_id: The NameID that identifies the principal.
+            name_id_policy: Policy describing the desired NameID format.
+
+        Returns:
+            saml2.saml.NameID: Existing or newly created NameID that matches the
+            policy.
+
+        Raises:
+            Unknown: When the supplied NameID cannot be resolved.
+            PolicyError: When the policy forbids creating new identifiers.
         """
         _id = self.find_local_id(name_id)
         if not _id:
@@ -336,15 +387,16 @@ class IdentDB:
         return self.construct_nameid(_id, name_id_policy=name_id_policy)
 
     def handle_manage_name_id_request(self, name_id, new_id=None, new_encrypted_id="", terminate=""):
-        """
-        Requests from the SP is about the SPProvidedID attribute.
-        So this is about adding,replacing and removing said attribute.
+        """Process a ManageNameID request that updates SP-provided identifiers.
 
-        :param name_id: NameID instance
-        :param new_id: NewID instance
-        :param new_encrypted_id: NewEncryptedID instance
-        :param terminate: Terminate instance
-        :return: The modified name_id
+        Args:
+            name_id: NameID instance to update.
+            new_id: Optional :class:`~saml2.samlp.NewID` value.
+            new_encrypted_id: Optional encrypted ID payload (not yet supported).
+            terminate: Optional :class:`~saml2.samlp.Terminate` request.
+
+        Returns:
+            saml2.saml.NameID: Updated NameID instance.
         """
         _id = self.find_local_id(name_id)
 

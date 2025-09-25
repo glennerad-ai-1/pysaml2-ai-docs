@@ -35,6 +35,15 @@ class EntityAttributesType_(SamlBase):
         extension_elements=None,
         extension_attributes=None,
     ):
+        """Initialise the entity attributes collection.
+
+        Args:
+            attribute: Sequence of :class:`saml.Attribute` instances.
+            assertion: Sequence of :class:`saml.Assertion` instances.
+            text: Raw text payload.
+            extension_elements: Additional XML child elements.
+            extension_attributes: Additional XML attributes.
+        """
         SamlBase.__init__(
             self,
             text=text,
@@ -46,6 +55,7 @@ class EntityAttributesType_(SamlBase):
 
 
 def entity_attributes_type__from_string(xml_string):
+    """Deserialize an ``EntityAttributesType`` element from XML."""
     return saml2.create_class_from_xml_string(EntityAttributesType_, xml_string)
 
 
@@ -61,6 +71,7 @@ class EntityAttributes(EntityAttributesType_):
 
 
 def entity_attributes_from_string(xml_string):
+    """Deserialize an ``EntityAttributes`` element from XML."""
     return saml2.create_class_from_xml_string(EntityAttributes, xml_string)
 
 
@@ -76,4 +87,5 @@ ELEMENT_BY_TAG = {
 
 
 def factory(tag, **kwargs):
+    """Instantiate an element by tag name."""
     return ELEMENT_BY_TAG[tag](**kwargs)

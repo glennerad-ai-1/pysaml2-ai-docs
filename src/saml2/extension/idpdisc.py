@@ -25,6 +25,7 @@ class DiscoveryResponse(md.IndexedEndpointType_):
 
 
 def discovery_response_from_string(xml_string):
+    """Deserialize a discovery response element from XML."""
     return saml2.create_class_from_xml_string(DiscoveryResponse, xml_string)
 
 
@@ -38,4 +39,5 @@ ELEMENT_BY_TAG = {
 
 
 def factory(tag, **kwargs):
+    """Instantiate an element by tag name."""
     return ELEMENT_BY_TAG[tag](**kwargs)

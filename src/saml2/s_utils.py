@@ -142,21 +142,26 @@ def valid_email(emailaddress, domains=GENERIC_DOMAINS):
 
 
 def decode_base64_and_inflate(string):
-    """base64 decodes and then inflates according to RFC1951
+    """Decode a deflated Base64-encoded string.
 
-    :param string: a deflated and encoded string
-    :return: the string after decoding and inflating
+    Args:
+        string: Deflated and Base64 encoded payload as bytes or string.
+
+    Returns:
+        bytes: Decompressed payload.
     """
 
     return zlib.decompress(base64.b64decode(string), -15)
 
 
 def deflate_and_base64_encode(string_val):
-    """
-    Deflates and the base64 encodes a string
+    """Deflate and Base64 encode a string.
 
-    :param string_val: The string to deflate and encode
-    :return: The deflated and encoded string
+    Args:
+        string_val: Text or bytes to encode.
+
+    Returns:
+        bytes: Deflated and encoded representation.
     """
     if not isinstance(string_val, bytes):
         string_val = string_val.encode("utf-8")
@@ -164,11 +169,14 @@ def deflate_and_base64_encode(string_val):
 
 
 def rndstr(size=16, alphabet=""):
-    """
-    Returns a string of random ascii characters or digits
+    """Return a random string of ASCII letters and digits.
 
-    :param size: The length of the string
-    :return: string
+    Args:
+        size: Length of the string to generate.
+        alphabet: Optional alphabet override. Defaults to letters and digits.
+
+    Returns:
+        str: Randomly generated string.
     """
     rng = random.SystemRandom()
     if not alphabet:
@@ -177,8 +185,14 @@ def rndstr(size=16, alphabet=""):
 
 
 def rndbytes(size=16, alphabet=""):
-    """
-    Returns rndstr always as a binary type
+    """Return a random byte sequence using :func:`rndstr` under the hood.
+
+    Args:
+        size: Length of the byte string to generate.
+        alphabet: Optional alphabet override.
+
+    Returns:
+        bytes: Random bytes suitable for cryptographic identifiers.
     """
     x = rndstr(size, alphabet)
     if isinstance(x, str):
@@ -187,12 +201,10 @@ def rndbytes(size=16, alphabet=""):
 
 
 def sid():
-    """creates an unique SID for each session.
-    160-bits long so it fulfills the SAML2 requirements which states
-    128-160 bits
+    """Create a random session identifier that satisfies SAML 2.0 limits.
 
-    :return: A random string prefix with 'id-' to make it
-        compliant with the NCName specification
+    Returns:
+        str: Identifier prefixed with ``"id-"`` suitable for XML IDs.
     """
     return f"id-{rndstr(17)}"
 
