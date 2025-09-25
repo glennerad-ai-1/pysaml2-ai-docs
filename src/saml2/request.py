@@ -25,13 +25,12 @@ class Request:
     def __init__(self, sec_context, receiver_addrs, attribute_converters=None, timeslack=0):
         """Initialise the request wrapper.
 
-        Args:
-            sec_context: Security context used for signature validation.
-            receiver_addrs: Iterable of endpoints on which this process expects
-                to receive requests.
-            attribute_converters: Optional converters for attribute names.
-            timeslack: Allowed clock skew in seconds when validating issue
-                instants.
+        :param sec_context: Security context used for signature validation.
+        :param receiver_addrs: Iterable of endpoints on which this process
+            expects to receive requests.
+        :param attribute_converters: Optional converters for attribute names.
+        :param timeslack: Allowed clock skew in seconds when validating issue
+            instants.
         """
         self.sec = sec_context
         self.receiver_addrs = receiver_addrs
@@ -65,24 +64,21 @@ class Request:
     ):
         """Parse a request and enforce signature requirements when configured.
 
-        Args:
-            xmldata: XML payload to parse.
-            binding: SAML binding used to deliver the request.
-            origdoc: Original base64-encoded request payload for Redirect
-                validation.
-            must: Flag indicating whether signatures are mandatory.
-            only_valid_cert: When ``True`` only currently valid certificates are
-                accepted.
-            relay_state: Optional relay state accompanying the request.
-            sigalg: Signature algorithm parameter from the HTTP-Redirect query.
-            signature: Signature parameter from the HTTP-Redirect query.
-
-        Returns:
-            Request: ``self`` for fluent usage.
-
-        Raises:
-            IncorrectlySigned: If the request fails mandatory signature checks.
-            NotValid: If schema validation fails.
+        :param xmldata: XML payload to parse.
+        :param binding: SAML binding used to deliver the request.
+        :param origdoc: Original base64-encoded request payload for Redirect
+            validation.
+        :param must: Flag indicating whether signatures are mandatory.
+        :param only_valid_cert: When ``True`` only currently valid certificates
+            are accepted.
+        :param relay_state: Optional relay state accompanying the request.
+        :param sigalg: Signature algorithm parameter from the HTTP-Redirect
+            query.
+        :param signature: Signature parameter from the HTTP-Redirect query.
+        :return: ``self`` for fluent usage.
+        :raises IncorrectlySigned: If the request fails mandatory signature
+            checks.
+        :raises NotValid: If schema validation fails.
         """
         # own copy
         self.xmlstr = xmldata[:]
@@ -144,12 +140,9 @@ class Request:
     def _do_redirect_sig_check(self, _saml_msg):
         """Validate an HTTP-Redirect signature against IdP metadata certificates.
 
-        Args:
-            _saml_msg: Mapping containing ``SAMLRequest``, ``Signature``,
-                ``SigAlg`` and optionally ``RelayState``.
-
-        Returns:
-            bool: ``True`` if any configured certificate validates the message.
+        :param _saml_msg: Mapping containing ``SAMLRequest``, ``Signature``,
+            ``SigAlg`` and optionally ``RelayState``.
+        :return: ``True`` if any configured certificate validates the message.
         """
         issuer = self.sender()
         certs = self.sec.metadata.certs(issuer, "any", "signing")
@@ -161,8 +154,7 @@ class Request:
     def issue_instant_ok(self):
         """Check that the request was issued at a reasonable time.
 
-        Returns:
-            bool: ``True`` if the issue instant is within the configured skew.
+        :return: ``True`` if the issue instant is within the configured skew.
         """
         upper = time_util.shift_time(time_util.time_in_a_while(days=1), self.timeslack).timetuple()
         lower = time_util.shift_time(time_util.time_a_while_ago(days=1), -self.timeslack).timetuple()
@@ -174,12 +166,9 @@ class Request:
     def _verify(self):
         """Validate version, destination, and freshness constraints.
 
-        Returns:
-            bool: ``True`` if the request passes baseline checks.
-
-        Raises:
-            VersionMismatch: If the SAML version is unsupported.
-            OtherError: If the destination does not match a known endpoint.
+        :return: ``True`` if the request passes baseline checks.
+        :raises VersionMismatch: If the SAML version is unsupported.
+        :raises OtherError: If the destination does not match a known endpoint.
         """
         valid_version = "2.0"
         if self.message.version != valid_version:
@@ -228,8 +217,7 @@ class Request:
         The name identifier can be represented as ``BaseID``, ``NameID`` or an
         ``EncryptedID``.
 
-        Returns:
-            Optional[str]: Identifier if present, otherwise ``None``.
+        :return: Identifier if present, otherwise ``None``.
         """
 
         if "subject" in self.message.keys():

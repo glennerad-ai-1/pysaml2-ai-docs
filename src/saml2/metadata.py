@@ -65,13 +65,10 @@ bXMLNSXS = b' xmlns:xs="http://www.w3.org/2001/XMLSchema"'
 def metadata_tostring_fix(desc, nspair, xmlstring=""):
     """Render metadata to XML while ensuring XML schema namespaces exist.
 
-    Args:
-        desc: Metadata object to serialise.
-        nspair: Namespace prefix mapping passed to ``to_string``.
-        xmlstring: Optional pre-rendered XML string to adjust.
-
-    Returns:
-        str | bytes: XML representation with the necessary schema namespace.
+    :param desc: Metadata object to serialise.
+    :param nspair: Namespace prefix mapping passed to ``to_string``.
+    :param xmlstring: Optional pre-rendered XML string to adjust.
+    :return: XML representation with the necessary schema namespace.
     """
     if not xmlstring:
         xmlstring = desc.to_string(nspair)
@@ -100,20 +97,18 @@ def create_metadata_string(
 ):
     """Create an entity or entities descriptor for the provided configuration.
 
-    Args:
-        configfile: Path to the configuration module when ``config`` is ``None``.
-        config: Optional pre-loaded configuration object.
-        valid: Validity duration in hours for generated metadata.
-        cert: Optional signing certificate override.
-        keyfile: Optional signing key override.
-        mid: Optional entity descriptor ID for the metadata container.
-        name: Optional name for an entities descriptor wrapper.
-        sign: Flag indicating whether to sign the metadata output.
-        sign_alg: Signature algorithm override.
-        digest_alg: Digest algorithm override.
-
-    Returns:
-        str | bytes: Serialised metadata document ready for distribution.
+    :param configfile: Path to the configuration module when ``config`` is
+        ``None``.
+    :param config: Optional pre-loaded configuration object.
+    :param valid: Validity duration in hours for generated metadata.
+    :param cert: Optional signing certificate override.
+    :param keyfile: Optional signing key override.
+    :param mid: Optional entity descriptor ID for the metadata container.
+    :param name: Optional name for an entities descriptor wrapper.
+    :param sign: Flag indicating whether to sign the metadata output.
+    :param sign_alg: Signature algorithm override.
+    :param digest_alg: Digest algorithm override.
+    :return: Serialised metadata document ready for distribution.
     """
     valid_for = 0
     nspair = {"xs": "http://www.w3.org/2001/XMLSchema"}
@@ -560,13 +555,10 @@ def do_spsso_descriptor(conf, cert=None, enc_cert=None):
 def do_idpsso_descriptor(conf, cert=None, enc_cert=None):
     """Build an :class:`~saml2.md.IDPSSODescriptor` from configuration data.
 
-    Args:
-        conf: Loaded configuration instance.
-        cert: Signing certificate contents or path.
-        enc_cert: Encryption certificate contents or path.
-
-    Returns:
-        saml2.md.IDPSSODescriptor: Metadata describing the IdP SSO service.
+    :param conf: Loaded configuration instance.
+    :param cert: Signing certificate contents or path.
+    :param enc_cert: Encryption certificate contents or path.
+    :return: Metadata describing the IdP SSO service.
     """
     idpsso = md.IDPSSODescriptor()
     idpsso.protocol_support_enumeration = samlp.NAMESPACE
@@ -739,12 +731,9 @@ def _add_attr_to_entity_attributes(extensions, attribute):
 def entity_descriptor(confd):
     """Build an :class:`~saml2.md.EntityDescriptor` from configuration.
 
-    Args:
-        confd: Loaded configuration instance whose ``context`` determines which
-            services to expose.
-
-    Returns:
-        saml2.md.EntityDescriptor: Metadata for the configured entity.
+    :param confd: Loaded configuration instance whose ``context`` determines
+        which services to expose.
+    :return: Metadata for the configured entity.
     """
     mycert = None
     enc_cert = None

@@ -47,19 +47,19 @@ class RequestType_(SamlBase):
     ):
         """Populate the ECP request envelope metadata.
 
-        Args:
-            issuer: Optional :class:`saml.Issuer` describing the IdP.
-            idp_list: Optional :class:`samlp.IDPList` offering IdP candidates.
-            must_understand: SOAP ``mustUnderstand`` flag.
-            actor: SOAP ``actor`` identifier.
-            provider_name: Display name of the service provider.
-            is_passive: Flag indicating whether passive authentication is
-                requested.
-            text: Raw text payload for the element.
-            extension_elements: Extra XML child elements that are not part of
-                the schema.
-            extension_attributes: Additional XML attributes that extend the
-                schema.
+        :param issuer: Optional :class:`saml.Issuer` describing the IdP.
+        :param idp_list: Optional :class:`samlp.IDPList` offering IdP
+            candidates.
+        :param must_understand: SOAP ``mustUnderstand`` flag.
+        :param actor: SOAP ``actor`` identifier.
+        :param provider_name: Display name of the service provider.
+        :param is_passive: Flag indicating whether passive authentication is
+            requested.
+        :param text: Raw text payload for the element.
+        :param extension_elements: Extra XML child elements that are not part
+            of the schema.
+        :param extension_attributes: Additional XML attributes that extend the
+            schema.
         """
         SamlBase.__init__(
             self,
@@ -78,11 +78,8 @@ class RequestType_(SamlBase):
 def request_type__from_string(xml_string):
     """Parse an ECP ``RequestType`` element from XML.
 
-    Args:
-        xml_string: XML representation of the request.
-
-    Returns:
-        RequestType_: Parsed request wrapper.
+    :param xml_string: XML representation of the request.
+    :return: Parsed request wrapper.
     """
     return saml2.create_class_from_xml_string(RequestType_, xml_string)
 
@@ -111,13 +108,12 @@ class ResponseType_(SamlBase):
     ):
         """Initialise the ECP response header wrapper.
 
-        Args:
-            must_understand: SOAP ``mustUnderstand`` flag.
-            actor: SOAP ``actor`` identifier.
-            assertion_consumer_service_url: ACS endpoint selected by the IdP.
-            text: Raw text payload.
-            extension_elements: Additional XML child elements.
-            extension_attributes: Additional XML attributes.
+        :param must_understand: SOAP ``mustUnderstand`` flag.
+        :param actor: SOAP ``actor`` identifier.
+        :param assertion_consumer_service_url: ACS endpoint selected by the IdP.
+        :param text: Raw text payload.
+        :param extension_elements: Additional XML child elements.
+        :param extension_attributes: Additional XML attributes.
         """
         SamlBase.__init__(
             self,
@@ -158,12 +154,11 @@ class RelayStateType_(SamlBase):
     ):
         """Configure a SOAP relay state wrapper for ECP.
 
-        Args:
-            must_understand: SOAP ``mustUnderstand`` flag.
-            actor: SOAP ``actor`` identifier.
-            text: Relay state payload.
-            extension_elements: XML children extending the element.
-            extension_attributes: XML attributes extending the element.
+        :param must_understand: SOAP ``mustUnderstand`` flag.
+        :param actor: SOAP ``actor`` identifier.
+        :param text: Relay state payload.
+        :param extension_elements: XML children extending the element.
+        :param extension_attributes: XML attributes extending the element.
         """
         SamlBase.__init__(
             self,

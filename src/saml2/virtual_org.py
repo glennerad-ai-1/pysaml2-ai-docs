@@ -13,10 +13,9 @@ class VirtualOrg:
     def __init__(self, sp, vorg, cnf):
         """Initialise helpers for attribute aggregation.
 
-        Args:
-            sp: Service provider client instance.
-            vorg: Name of the virtual organisation.
-            cnf: Virtual organisation configuration dictionary.
+        :param sp: Service provider client instance.
+        :param vorg: Name of the virtual organisation.
+        :param cnf: Virtual organisation configuration dictionary.
         """
         self.sp = sp  # The parent SP client instance
         self._name = vorg
@@ -67,11 +66,9 @@ class VirtualOrg:
     def do_aggregation(self, name_id):
         """Perform attribute aggregation across VO members.
 
-        Args:
-            name_id: Subject identifier whose attributes should be aggregated.
-
-        Returns:
-            bool: ``True`` if at least one member was queried, otherwise
+        :param name_id: Subject identifier whose attributes should be
+            aggregated.
+        :return: ``True`` if at least one member was queried, otherwise
             ``False``.
         """
 

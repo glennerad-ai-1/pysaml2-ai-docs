@@ -54,22 +54,19 @@ class AuthnBroker:
     def add(self, spec, method, level=0, authn_authority="", reference=None):
         """Register a new authentication method for a given context.
 
-        Args:
-            spec: The advertised :class:`~saml2.saml.AuthnContext` or
-                declaration describing the method.
-            method: Identifier that the IdP uses internally when invoking the
-                authenticating mechanism.
-            level: Positive integer indicating the strength of the method where
-                a higher value represents a stronger assurance level.
-            authn_authority: Optional identifier of the upstream authority that
-                issues the authentication event.
-            reference: Optional explicit reference to store the configuration
-                under. A unique reference is generated automatically when not
-                supplied.
-
-        Raises:
-            Exception: If the generated or supplied reference collides with an
-                existing registration.
+        :param spec: The advertised :class:`~saml2.saml.AuthnContext` or
+            declaration describing the method.
+        :param method: Identifier that the IdP uses internally when invoking
+            the authenticating mechanism.
+        :param level: Positive integer indicating the strength of the method;
+            higher values represent a stronger assurance level.
+        :param authn_authority: Optional identifier of the upstream authority
+            that issues the authentication event.
+        :param reference: Optional explicit reference to store the
+            configuration under. A unique reference is generated automatically
+            when not supplied.
+        :raises Exception: If the generated or supplied reference collides with
+            an existing registration.
         """
 
         if spec.authn_context_class_ref:
@@ -98,15 +95,14 @@ class AuthnBroker:
     def remove(self, spec, method=None, level=0, authn_authority=""):
         """Remove registrations that match the provided constraints.
 
-        Args:
-            spec: The :class:`~saml2.saml.AuthnContext` describing the
-                registration to remove.
-            method: Optional identifier of the method to remove. When omitted
-                all methods for the context are considered.
-            level: Optional assurance level that must match an existing
-                registration to be removed.
-            authn_authority: Optional identifier of the authentication
-                authority to match before removal.
+        :param spec: The :class:`~saml2.saml.AuthnContext` describing the
+            registration to remove.
+        :param method: Optional identifier of the method to remove. When
+            omitted, all methods for the context are considered.
+        :param level: Optional assurance level that must match an existing
+            registration to be removed.
+        :param authn_authority: Optional identifier of the authentication
+            authority to match before removal.
         """
         if spec.authn_context_class_ref:
             _cls_ref = spec.authn_context_class_ref.text
@@ -130,16 +126,13 @@ class AuthnBroker:
     def _pick_by_class_ref(self, cls_ref, comparision_type="exact"):
         """Resolve methods for the given class reference and comparison type.
 
-        Args:
-            cls_ref: The SAML authentication context class reference URI to
-                match.
-            comparision_type: How to compare assurance levels. One of
-                ``"exact"``, ``"minimum"``, ``"maximum"`` or ``"better"``.
-
-        Returns:
-            list[tuple[str | None, str]]: Ordered list of pairs ``(method,
-            reference)`` describing matching registrations. Methods may be
-            ``None`` when only a declaration is available.
+        :param cls_ref: The SAML authentication context class reference URI to
+            match.
+        :param comparision_type: How to compare assurance levels. One of
+            ``"exact"``, ``"minimum"``, ``"maximum"`` or ``"better"``.
+        :return: An ordered list of ``(method, reference)`` pairs describing
+            matching registrations. Methods may be ``None`` when only a
+            declaration is available.
         """
         func = getattr(self, comparision_type)
         try:
@@ -175,14 +168,11 @@ class AuthnBroker:
     def pick(self, req_authn_context=None):
         """Return candidate authentication methods for a request.
 
-        Args:
-            req_authn_context: Requested context requirements provided by the
-                service provider. ``None`` defaults to the ``unspecified``
-                context.
-
-        Returns:
-            list[tuple[str | None, str]]: Ordered list of method references that
-            satisfy the request according to the requested comparison strategy.
+        :param req_authn_context: Requested context requirements provided by
+            the service provider. ``None`` defaults to the ``unspecified``
+            context.
+        :return: An ordered list of method references that satisfy the request
+            according to the requested comparison strategy.
         """
 
         if req_authn_context is None:
@@ -209,12 +199,9 @@ class AuthnBroker:
     def match(self, requested, provided):
         """Check whether a provided context fulfils a requested context.
 
-        Args:
-            requested: Requested authentication context identifier.
-            provided: Authentication context identifier delivered by the IdP.
-
-        Returns:
-            bool: ``True`` if the provided context satisfies the request.
+        :param requested: Requested authentication context identifier.
+        :param provided: Authentication context identifier delivered by the IdP.
+        :return: ``True`` if the provided context satisfies the request.
         """
 
         if requested == provided:
@@ -225,11 +212,8 @@ class AuthnBroker:
     def __getitem__(self, ref):
         """Retrieve the stored registration details for a reference.
 
-        Args:
-            ref: Registration reference identifier generated by :meth:`add`.
-
-        Returns:
-            dict: Stored metadata describing the authentication method.
+        :param ref: Registration reference identifier generated by :meth:`add`.
+        :return: Stored metadata describing the authentication method.
         """
 
         return self.db["info"][ref]
@@ -237,11 +221,8 @@ class AuthnBroker:
     def get_authn_by_accr(self, accr):
         """Return the first registration matching a class reference.
 
-        Args:
-            accr: Authentication context class reference URI.
-
-        Returns:
-            dict: The stored registration information for the first matching
+        :param accr: Authentication context class reference URI.
+        :return: The stored registration information for the first matching
             reference.
         """
 

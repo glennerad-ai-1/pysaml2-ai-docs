@@ -1,27 +1,20 @@
-from typing import Any
-
-
 __author__ = "roland"
 
 
 def find_paths(cls, arg, path=None, seen=None, res=None, lev=0):
     """Discover attribute paths defined on a SAML class hierarchy.
 
-    Args:
-        cls: SAML class whose ``c_children`` and ``c_attributes`` metadata
-            should be traversed.
-        arg: Attribute or child name that should be located.
-        path: Accumulated path segments while descending the tree.
-        seen: Sequence of classes that have already been inspected to avoid
-            infinite recursion.
-        res: Mutable list that will be populated with discovered paths.
-        lev: Current recursion depth; used to initialise the ``res`` list on
-            the first invocation.
-
-    Returns:
-        list[list[str]] | None: When ``lev`` is zero a list of matching paths is
-        returned. For recursive calls, ``None`` is returned to keep the
-        traversal lightweight.
+    :param cls: SAML class whose ``c_children`` and ``c_attributes`` metadata
+        should be traversed.
+    :param arg: Attribute or child name that should be located.
+    :param path: Accumulated path segments while descending the tree.
+    :param seen: Sequence of classes that have already been inspected to avoid
+        infinite recursion.
+    :param res: Mutable list that will be populated with discovered paths.
+    :param lev: Current recursion depth; used to initialise ``res`` on the
+        first invocation.
+    :return: A list of matching paths when called from the top-level. Recursive
+        invocations return ``None`` to keep the traversal lightweight.
     """
     if lev == 0 and res is None:
         res = []
@@ -60,17 +53,13 @@ def find_paths(cls, arg, path=None, seen=None, res=None, lev=0):
 
 
 def set_arg(cls, arg, value):
-    """Build dictionaries that assign a value to every matching attribute.
+    """Build dictionaries that assign ``value`` to every matching attribute.
 
-    Args:
-        cls: SAML class whose metadata will be inspected.
-        arg: Attribute or child element name that should be set.
-        value: Value to assign at the terminal path element.
-
-    Returns:
-        list[dict[str, Any]]: One dictionary for each matching path. Each
-        dictionary contains nested structures that describe how to reach the
-        attribute from the root object.
+    :param cls: SAML class whose metadata will be inspected.
+    :param arg: Attribute or child element name that should be set.
+    :param value: Value to assign at the terminal path element.
+    :return: A list containing one dictionary per matching path. Each
+        dictionary describes how to reach the attribute from the root object.
     """
     res = []
     for path in find_paths(cls, arg):
@@ -85,19 +74,37 @@ def set_arg(cls, arg, value):
 
 
 def add_path(tdict, path):
-    """Create or extend an argument tree from a flattened path.
+    """Create or extend an argument tree ``tdict`` from ``path``.
 
-    The utility converts a list describing a traversal into a nested
-    dictionary structure. The second to last element becomes a key whose value
-    is the final path element. The remaining entries in ``path`` are turned
-    into intermediate dictionaries that capture the hierarchy.
+    :param tdict: A dictionary representing an argument tree.
+    :param path: A path list.
+    :return: A dictionary representing the updated argument tree.
 
-    Args:
-        tdict: Dictionary representing a partially built argument tree.
-        path: Iterable of path components describing how to reach an attribute.
+    Convert a list of items in a ``path`` into a nested dict, where the
+    second to last item becomes the key for the final item. The remaining
+    items in the path become keys in the nested dict around that final pair
+    of items.
 
-    Returns:
-        dict[str, Any]: The updated argument tree.
+    For example, for input values of::
+
+        tdict = {}
+        path = ['assertion', 'subject', 'subject_confirmation',
+                'method', 'urn:oasis:names:tc:SAML:2.0:cm:bearer']
+
+    returns the output::
+
+        {'assertion': {'subject': {'subject_confirmation':
+                      {'method': 'urn:oasis:names:tc:SAML:2.0:cm:bearer'}}}}
+
+    Another example, this time with a non-empty ``tdict`` input::
+
+        tdict = {'method': 'urn:oasis:names:tc:SAML:2.0:cm:bearer'}
+        path = ['subject_confirmation_data', 'in_response_to', '_012345']
+
+    returns the output::
+
+        {'subject_confirmation_data': {'in_response_to': '_012345'},
+         'method': 'urn:oasis:names:tc:SAML:2.0:cm:bearer'}
     """
     t = tdict
     for step in path[:-2]:
@@ -114,13 +121,9 @@ def add_path(tdict, path):
 def is_set(tdict, path):
     """Determine whether a path inside an argument tree has a value.
 
-    Args:
-        tdict: Dictionary representing the argument tree.
-        path: Iterable of path segments describing the desired value.
-
-    Returns:
-        bool: ``True`` when a non-``None`` value exists at the supplied path;
-        otherwise ``False``.
+    :param tdict: A dictionary representing an argument tree.
+    :param path: A path list.
+    :return: ``True`` if the value is set, otherwise ``False``.
     """
     t = tdict
     for step in path:
@@ -138,12 +141,9 @@ def is_set(tdict, path):
 def get_attr(tdict, path):
     """Fetch the value located at ``path`` inside ``tdict``.
 
-    Args:
-        tdict: Dictionary representing the argument tree.
-        path: Iterable of keys describing the nested traversal.
-
-    Returns:
-        Any: Value stored at the end of ``path``.
+    :param tdict: A dictionary representing an argument tree.
+    :param path: A path list describing the nested traversal.
+    :return: The value stored at the end of ``path``.
     """
     t = tdict
     for step in path:

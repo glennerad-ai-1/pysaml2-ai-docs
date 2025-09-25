@@ -34,12 +34,9 @@ logger = logging.getLogger(__name__)
 def ecp_capable(headers):
     """Determine if an HTTP request advertises ECP support.
 
-    Args:
-        headers (dict): Mapping of HTTP header names to values as provided by
-            the client.
-
-    Returns:
-        bool: ``True`` if the request accepts PAOS responses and identifies the
+    :param headers: Mapping of HTTP header names to values as provided by the
+        client.
+    :return: ``True`` if the request accepts PAOS responses and identifies the
         ECP service, otherwise ``False``.
     """
 
@@ -55,21 +52,16 @@ def ecp_capable(headers):
 def ecp_auth_request(cls, entityid=None, relay_state="", sign=None, sign_alg=None, digest_alg=None):
     """Create an ECP authentication request SOAP envelope.
 
-    Args:
-        cls: The service implementation building the request, typically a
-            :class:`saml2.client.Saml2Client` or compatible helper.
-        entityid (str | None): EntityID of the IdP that should receive the
-            request. ``None`` results in metadata-driven discovery.
-        relay_state (str): Opaque state returned to the caller after
-            successful login.
-        sign (bool | None): Controls whether the request is cryptographically
-            signed.
-        sign_alg (str | None): XML signature algorithm URI.
-        digest_alg (str | None): XML signature digest algorithm URI.
-
-    Returns:
-        tuple[str, str]: The generated request ID and the serialized SOAP
-        envelope as a string.
+    :param cls: The service implementation building the request, typically a
+        :class:`saml2.client.Saml2Client` or compatible helper.
+    :param entityid: EntityID of the IdP that should receive the request.
+        ``None`` results in metadata-driven discovery.
+    :param relay_state: Opaque state returned to the caller after successful
+        login.
+    :param sign: Controls whether the request is cryptographically signed.
+    :param sign_alg: XML signature algorithm URI.
+    :param digest_alg: XML signature digest algorithm URI.
+    :return: A tuple ``(request_id, soap_envelope)``.
     """
 
     eelist = []
@@ -155,16 +147,12 @@ def ecp_auth_request(cls, entityid=None, relay_state="", sign=None, sign_alg=Non
 def handle_ecp_authn_response(cls, soap_message, outstanding=None):
     """Parse an IdP authentication response delivered via the ECP channel.
 
-    Args:
-        cls: Service object responsible for processing the ECP message.
-        soap_message (str): Serialized SOAP envelope received from the IdP.
-        outstanding (dict | None): Outstanding request mapping used to validate
-            the response.
-
-    Returns:
-        tuple[saml2.response.AuthnResponse, saml2.profile.ecp.RelayState | None]:
-        Parsed authentication response together with the optional relay state
-        element.
+    :param cls: Service object responsible for processing the ECP message.
+    :param soap_message: Serialized SOAP envelope received from the IdP.
+    :param outstanding: Outstanding request mapping used to validate the
+        response.
+    :return: Parsed authentication response together with the optional relay
+        state element.
     """
 
     rdict = soap.class_instances_from_soap_enveloped_saml_thingies(soap_message, [paos, ecp, samlp])
@@ -186,14 +174,10 @@ def handle_ecp_authn_response(cls, soap_message, outstanding=None):
 def ecp_response(target_url, response):
     """Wrap an authentication response in an ECP SOAP envelope.
 
-    Args:
-        target_url (str): Assertion Consumer Service URL the client should
-            forward the response to.
-        response (saml2.response.AuthnResponse | samlp.Response): Parsed
-            response object to embed in the SOAP body.
-
-    Returns:
-        str: Serialized SOAP envelope ready to be sent to the client.
+    :param target_url: Assertion Consumer Service URL the client should forward
+        the response to.
+    :param response: Parsed response object to embed in the SOAP body.
+    :return: Serialized SOAP envelope ready to be sent to the client.
     """
 
     ecp_response = ecp.Response(assertion_consumer_service_url=target_url)
@@ -214,11 +198,10 @@ class ECPServer(Server):
     def __init__(self, config_file="", config=None, cache=None):
         """Create a new ECP-capable IdP server instance.
 
-        Args:
-            config_file (str): Path to the IdP configuration file.
-            config (dict | saml2.config.Config | None): In-memory configuration
-                object overriding ``config_file`` when provided.
-            cache: Optional cache backend supplied to :class:`Server`.
+        :param config_file: Path to the IdP configuration file.
+        :param config: In-memory configuration object overriding
+            ``config_file`` when provided.
+        :param cache: Optional cache backend supplied to :class:`Server`.
         """
 
         Server.__init__(self, config_file, config, cache)
