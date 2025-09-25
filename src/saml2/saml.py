@@ -1694,6 +1694,15 @@ class AssertionType_(SamlBase):
 
 
 def assertion_type__from_string(xml_string):
+    """Parse XML into an :class:`AssertionType_` instance.
+
+    Args:
+        xml_string: XML representation of an assertion type.
+
+    Returns:
+        AssertionType_: Parsed assertion type object.
+    """
+
     return saml2.create_class_from_xml_string(AssertionType_, xml_string)
 
 
@@ -1709,6 +1718,15 @@ class Assertion(AssertionType_):
 
 
 def assertion_from_string(xml_string):
+    """Parse XML into an :class:`Assertion` instance.
+
+    Args:
+        xml_string: XML representation of an assertion.
+
+    Returns:
+        Assertion: Parsed assertion object.
+    """
+
     return saml2.create_class_from_xml_string(Assertion, xml_string)
 
 

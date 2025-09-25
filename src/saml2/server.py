@@ -56,6 +56,26 @@ AUTHN_DICT_MAP = {
 
 
 def _shelve_compat(name, *args, **kwargs):
+    """Open a shelve database while remaining compatible with Python 3.
+
+    The helper mirrors the Python 2 behaviour where ``dbm.error`` was
+    indexable. When running under Python 3 the ``whichdb`` implementation must
+    attempt the ``.db`` suffix to determine the database type, so the function
+    retries without the suffix if necessary.
+
+    Args:
+        name: The base filename of the shelve database.
+        *args: Positional arguments forwarded to ``shelve.open``.
+        **kwargs: Keyword arguments forwarded to ``shelve.open``.
+
+    Returns:
+        shelve.DbfilenameShelf: An opened shelf instance.
+
+    Raises:
+        dbm.error: If the shelve database cannot be opened even after retrying
+            without the ``.db`` suffix.
+    """
+
     try:
         return shelve.open(name, *args, **kwargs)
     except dbm.error[0]:
@@ -79,6 +99,20 @@ class Server(Entity):
         symkey="",
         msg_cb=None,
     ):
+        """Initialise an IdP or AA server entity.
+
+        Args:
+            config_file: Path to a configuration file to load.
+            config: In-memory configuration dictionary that overrides
+                ``config_file`` when provided.
+            cache: Optional cache backend for session data.
+            stype: Entity type for the server, typically ``"idp"`` or
+                ``"aa"``.
+            symkey: Symmetric key used for encrypting data. A random key is
+                generated when not supplied.
+            msg_cb: Callback invoked for outgoing protocol messages.
+        """
+
         Entity.__init__(self, stype, config, config_file, msg_cb=msg_cb)
         self.eptid = None
         self.init_config(stype)
@@ -93,17 +127,47 @@ class Server(Entity):
         self.lock = threading.Lock()
 
     def getvalid_certificate_str(self):
+        """Return the last successfully validated certificate string.
+
+        Returns:
+            str | None: PEM-formatted certificate last validated by the
+            security handler, or ``None`` when no certificate has been
+            processed yet.
+        """
+
         if self.sec.cert_handler is not None:
             return self.sec.cert_handler._last_validated_cert
         return None
 
     def support_AssertionIDRequest(self):
+        """Report support for AssertionIDRequest messages.
+
+        Returns:
+            bool: Always ``True`` since AssertionIDRequest is supported.
+        """
+
         return True
 
     def support_AuthnQuery(self):
+        """Report support for AuthnQuery messages.
+
+        Returns:
+            bool: Always ``True`` since AuthnQuery is supported.
+        """
+
         return True
 
     def choose_session_storage(self):
+        """Select the session storage backend for the IdP.
+
+        Returns:
+            SessionStorage: Storage implementation configured for the IdP.
+
+        Raises:
+            NotImplementedError: If the configured storage type is not
+                recognised.
+        """
+
         _spec = self.config.getattr("session_storage", "idp")
         if not _spec:
             return SessionStorage()
@@ -120,9 +184,13 @@ class Server(Entity):
         raise NotImplementedError("No such storage type implemented")
 
     def init_config(self, stype="idp"):
-        """Remaining init of the server configuration
+        """Finish configuring the server based on its entity type.
 
-        :param stype: The type of Server ("idp"/"aa")
+        Args:
+            stype: Server type, typically ``"idp"`` or ``"aa"``.
+
+        Raises:
+            Exception: If the identity database cannot be opened.
         """
         if stype == "aa":
             return
@@ -190,14 +258,16 @@ class Server(Entity):
             raise
 
     def wants(self, sp_entity_id, index=None):
-        """Returns what attributes the SP requires and which are optional
-        if any such demands are registered in the Metadata.
+        """Return the required and optional attributes for a service provider.
 
-        :param sp_entity_id: The entity id of the SP
-        :param index: which of the attribute consumer services its all about
-            if index == None then all attribute consumer services are clumped
-            together.
-        :return: 2-tuple, list of required and list of optional attributes
+        Args:
+            sp_entity_id: The entity ID of the service provider.
+            index: Optional attribute consumer service index. When ``None`` all
+                services are considered together.
+
+        Returns:
+            tuple[list[str], list[str]]: The required and optional attributes
+            as defined in metadata.
         """
         return self.metadata.attribute_requirement(sp_entity_id, index)
 

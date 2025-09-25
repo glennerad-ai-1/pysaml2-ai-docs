@@ -45,6 +45,22 @@ class RequestType_(SamlBase):
         extension_elements=None,
         extension_attributes=None,
     ):
+        """Populate the ECP request envelope metadata.
+
+        Args:
+            issuer: Optional :class:`saml.Issuer` describing the IdP.
+            idp_list: Optional :class:`samlp.IDPList` offering IdP candidates.
+            must_understand: SOAP ``mustUnderstand`` flag.
+            actor: SOAP ``actor`` identifier.
+            provider_name: Display name of the service provider.
+            is_passive: Flag indicating whether passive authentication is
+                requested.
+            text: Raw text payload for the element.
+            extension_elements: Extra XML child elements that are not part of
+                the schema.
+            extension_attributes: Additional XML attributes that extend the
+                schema.
+        """
         SamlBase.__init__(
             self,
             text=text,
@@ -60,6 +76,14 @@ class RequestType_(SamlBase):
 
 
 def request_type__from_string(xml_string):
+    """Parse an ECP ``RequestType`` element from XML.
+
+    Args:
+        xml_string: XML representation of the request.
+
+    Returns:
+        RequestType_: Parsed request wrapper.
+    """
     return saml2.create_class_from_xml_string(RequestType_, xml_string)
 
 
@@ -85,6 +109,16 @@ class ResponseType_(SamlBase):
         extension_elements=None,
         extension_attributes=None,
     ):
+        """Initialise the ECP response header wrapper.
+
+        Args:
+            must_understand: SOAP ``mustUnderstand`` flag.
+            actor: SOAP ``actor`` identifier.
+            assertion_consumer_service_url: ACS endpoint selected by the IdP.
+            text: Raw text payload.
+            extension_elements: Additional XML child elements.
+            extension_attributes: Additional XML attributes.
+        """
         SamlBase.__init__(
             self,
             text=text,
@@ -97,6 +131,7 @@ class ResponseType_(SamlBase):
 
 
 def response_type__from_string(xml_string):
+    """Deserialize an ECP ``ResponseType`` element."""
     return saml2.create_class_from_xml_string(ResponseType_, xml_string)
 
 
@@ -121,6 +156,15 @@ class RelayStateType_(SamlBase):
         extension_elements=None,
         extension_attributes=None,
     ):
+        """Configure a SOAP relay state wrapper for ECP.
+
+        Args:
+            must_understand: SOAP ``mustUnderstand`` flag.
+            actor: SOAP ``actor`` identifier.
+            text: Relay state payload.
+            extension_elements: XML children extending the element.
+            extension_attributes: XML attributes extending the element.
+        """
         SamlBase.__init__(
             self,
             text=text,
@@ -132,6 +176,7 @@ class RelayStateType_(SamlBase):
 
 
 def relay_state_type__from_string(xml_string):
+    """Deserialize an ECP ``RelayStateType`` element."""
     return saml2.create_class_from_xml_string(RelayStateType_, xml_string)
 
 
@@ -147,6 +192,7 @@ class Request(RequestType_):
 
 
 def request_from_string(xml_string):
+    """Deserialize a concrete ECP request element."""
     return saml2.create_class_from_xml_string(Request, xml_string)
 
 
@@ -162,6 +208,7 @@ class Response(ResponseType_):
 
 
 def response_from_string(xml_string):
+    """Deserialize a concrete ECP response element."""
     return saml2.create_class_from_xml_string(Response, xml_string)
 
 
@@ -177,6 +224,7 @@ class RelayState(RelayStateType_):
 
 
 def relay_state_from_string(xml_string):
+    """Deserialize a concrete ECP relay state element."""
     return saml2.create_class_from_xml_string(RelayState, xml_string)
 
 

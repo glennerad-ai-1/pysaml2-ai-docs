@@ -1286,6 +1286,15 @@ class AuthnRequestType_(RequestAbstractType_):
 
 
 def authn_request_type__from_string(xml_string):
+    """Parse XML into an :class:`AuthnRequestType_` instance.
+
+    Args:
+        xml_string: XML representation of an authentication request type.
+
+    Returns:
+        AuthnRequestType_: Parsed object model.
+    """
+
     return saml2.create_class_from_xml_string(AuthnRequestType_, xml_string)
 
 
@@ -1301,6 +1310,15 @@ class AuthnRequest(AuthnRequestType_):
 
 
 def authn_request_from_string(xml_string):
+    """Parse XML into an :class:`AuthnRequest` instance.
+
+    Args:
+        xml_string: XML representation of an authentication request.
+
+    Returns:
+        AuthnRequest: Parsed object model.
+    """
+
     return saml2.create_class_from_xml_string(AuthnRequest, xml_string)
 
 
@@ -1594,6 +1612,15 @@ class Response(ResponseType_):
 
 
 def response_from_string(xml_string):
+    """Parse XML into a :class:`Response` instance.
+
+    Args:
+        xml_string: XML representation of a SAML response.
+
+    Returns:
+        Response: Parsed response object.
+    """
+
     return saml2.create_class_from_xml_string(Response, xml_string)
 
 

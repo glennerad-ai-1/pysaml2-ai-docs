@@ -15,11 +15,24 @@ logger = logging.getLogger(__name__)
 
 
 def _dummy(data, **_arg):
+    """Default signature check which accepts any data."""
     return ""
 
 
 class Request:
+    """Base representation of inbound SAML protocol requests."""
+
     def __init__(self, sec_context, receiver_addrs, attribute_converters=None, timeslack=0):
+        """Initialise the request wrapper.
+
+        Args:
+            sec_context: Security context used for signature validation.
+            receiver_addrs: Iterable of endpoints on which this process expects
+                to receive requests.
+            attribute_converters: Optional converters for attribute names.
+            timeslack: Allowed clock skew in seconds when validating issue
+                instants.
+        """
         self.sec = sec_context
         self.receiver_addrs = receiver_addrs
         self.timeslack = timeslack
@@ -33,6 +46,7 @@ class Request:
         self.signature_check = _dummy  # has to be set !!!
 
     def _clear(self):
+        """Reset transient parsing state prior to loading new XML."""
         self.xmlstr = ""
         self.name_id = ""
         self.message = None
@@ -49,6 +63,27 @@ class Request:
         sigalg=None,
         signature=None,
     ):
+        """Parse a request and enforce signature requirements when configured.
+
+        Args:
+            xmldata: XML payload to parse.
+            binding: SAML binding used to deliver the request.
+            origdoc: Original base64-encoded request payload for Redirect
+                validation.
+            must: Flag indicating whether signatures are mandatory.
+            only_valid_cert: When ``True`` only currently valid certificates are
+                accepted.
+            relay_state: Optional relay state accompanying the request.
+            sigalg: Signature algorithm parameter from the HTTP-Redirect query.
+            signature: Signature parameter from the HTTP-Redirect query.
+
+        Returns:
+            Request: ``self`` for fluent usage.
+
+        Raises:
+            IncorrectlySigned: If the request fails mandatory signature checks.
+            NotValid: If schema validation fails.
+        """
         # own copy
         self.xmlstr = xmldata[:]
         logger.debug(
@@ -107,6 +142,15 @@ class Request:
         return self
 
     def _do_redirect_sig_check(self, _saml_msg):
+        """Validate an HTTP-Redirect signature against IdP metadata certificates.
+
+        Args:
+            _saml_msg: Mapping containing ``SAMLRequest``, ``Signature``,
+                ``SigAlg`` and optionally ``RelayState``.
+
+        Returns:
+            bool: ``True`` if any configured certificate validates the message.
+        """
         issuer = self.sender()
         certs = self.sec.metadata.certs(issuer, "any", "signing")
         logger.debug("Certs to verify request sig: %s, _saml_msg: %s", certs, _saml_msg)
@@ -115,7 +159,11 @@ class Request:
         return verified
 
     def issue_instant_ok(self):
-        """Check that the request was issued at a reasonable time"""
+        """Check that the request was issued at a reasonable time.
+
+        Returns:
+            bool: ``True`` if the issue instant is within the configured skew.
+        """
         upper = time_util.shift_time(time_util.time_in_a_while(days=1), self.timeslack).timetuple()
         lower = time_util.shift_time(time_util.time_a_while_ago(days=1), -self.timeslack).timetuple()
         # print("issue_instant: %s" % self.message.issue_instant)
@@ -124,6 +172,15 @@ class Request:
         return issued_at > lower and issued_at < upper
 
     def _verify(self):
+        """Validate version, destination, and freshness constraints.
+
+        Returns:
+            bool: ``True`` if the request passes baseline checks.
+
+        Raises:
+            VersionMismatch: If the SAML version is unsupported.
+            OtherError: If the destination does not match a known endpoint.
+        """
         valid_version = "2.0"
         if self.message.version != valid_version:
             raise VersionMismatch(f"Invalid version {self.message.version} should be {valid_version}")
@@ -146,6 +203,7 @@ class Request:
         sigalg=None,
         signature=None,
     ):
+        """Load and verify an inbound SAML protocol request."""
         return self._loads(
             xmldata,
             binding,
@@ -158,16 +216,20 @@ class Request:
         )
 
     def verify(self):
+        """Run baseline validation, returning ``None`` on assertion errors."""
         try:
             return self._verify()
         except AssertionError:
             return None
 
     def subject_id(self):
-        """The name of the subject can be in either of
-        BaseID, NameID or EncryptedID
+        """Return the identifier for the subject of the request.
 
-        :return: The identifier if there is one
+        The name identifier can be represented as ``BaseID``, ``NameID`` or an
+        ``EncryptedID``.
+
+        Returns:
+            Optional[str]: Identifier if present, otherwise ``None``.
         """
 
         if "subject" in self.message.keys():
@@ -185,95 +247,124 @@ class Request:
                 pass
 
     def sender(self):
+        """Return the textual issuer of the request."""
         return self.message.issuer.text.strip()
 
 
 class LogoutRequest(Request):
+    """Handler for ``LogoutRequest`` messages."""
+
     msgtype = "logout_request"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters=None, timeslack=0):
+        """Configure verification helpers for logout requests."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_logout_request
 
     @property
     def issuer(self):
+        """Return the issuer element."""
         return self.message.issuer
 
 
 class AttributeQuery(Request):
+    """Parser for ``AttributeQuery`` messages."""
+
     msgtype = "attribute_query"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters=None, timeslack=0):
+        """Initialise attribute query verification helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_attribute_query
 
     def attribute(self):
-        """Which attributes that are sought for"""
+        """Return requested attributes."""
         return []
 
 
 class AuthnRequest(Request):
+    """Parser for ``AuthnRequest`` messages."""
+
     msgtype = "authn_request"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters, timeslack=0):
+        """Initialise authentication request helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_authn_request
 
     def attributes(self):
+        """Return requested attributes converted to local names."""
         return to_local(self.attribute_converters, self.message)
 
 
 class AuthnQuery(Request):
+    """Parser for ``AuthnQuery`` messages."""
+
     msgtype = "authn_query"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters, timeslack=0):
+        """Initialise authentication query helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_authn_query
 
     def attributes(self):
+        """Return requested attributes converted to local names."""
         return to_local(self.attribute_converters, self.message)
 
 
 class AssertionIDRequest(Request):
+    """Parser for ``AssertionIDRequest`` messages."""
+
     msgtype = "assertion_id_request"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters, timeslack=0):
+        """Initialise assertion ID request helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_assertion_id_request
 
     def attributes(self):
+        """Return requested attributes converted to local names."""
         return to_local(self.attribute_converters, self.message)
 
 
 class AuthzDecisionQuery(Request):
+    """Parser for ``AuthzDecisionQuery`` messages."""
+
     msgtype = "authz_decision_query"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters=None, timeslack=0):
+        """Initialise authorization decision query helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_authz_decision_query
 
     def action(self):
-        """Which action authorization is requested for"""
+        """Return the action that authorization is requested for."""
 
     def evidence(self):
-        """The evidence on which the decision is based"""
+        """Return evidence on which the decision is based."""
 
     def resource(self):
-        """On which resource the action is expected to occur"""
+        """Return the resource for which the action applies."""
 
 
 class NameIDMappingRequest(Request):
+    """Parser for ``NameIDMappingRequest`` messages."""
+
     msgtype = "name_id_mapping_request"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters, timeslack=0):
+        """Initialise name identifier mapping request helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_name_id_mapping_request
 
 
 class ManageNameIDRequest(Request):
+    """Parser for ``ManageNameIDRequest`` messages."""
+
     msgtype = "manage_name_id_request"
 
     def __init__(self, sec_context, receiver_addrs, attribute_converters, timeslack=0):
+        """Initialise manage-name identifier request helpers."""
         Request.__init__(self, sec_context, receiver_addrs, attribute_converters, timeslack)
         self.signature_check = self.sec.correctly_signed_manage_name_id_request
 
